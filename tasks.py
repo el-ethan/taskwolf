@@ -6,12 +6,11 @@ class GenericTask(object):
     _prefix_char = '?'
     date_format = None
 
-    def __init__(self, title, duedate=None, tags=None, completed=False, nesting=1):
+    def __init__(self, title, duedate=None, tags=None, nesting=1):
         self._title = title
         self._duedate = duedate
-        self.tags = tags
+        self._tags = tags
         self.now = datetime.now()
-        self.completed = completed
         self.nesting = nesting
 
     @property
@@ -22,7 +21,7 @@ class GenericTask(object):
 
     @property
     def is_due(self):
-        return self._duedate <= datetime.now()
+        return self._duedate <= self.now
 
     @property
     def prefix(self):
@@ -32,8 +31,9 @@ class GenericTask(object):
     def title(self):
         return self.prefix + self._title
 
-class WolfTask(GenericTask):
-    pass
+    @property
+    def tags(self):
+        raise NotImplementedError
 
 
 class OrgTask(GenericTask):
@@ -50,9 +50,24 @@ class OrgTask(GenericTask):
     def title(self):
         return self.prefix + self._title
 
-class TaskPaperTask(GenericTask):
-    pass
+    @property
+    def tags(self):
+        return ':{}:'.format(':'.join(self._tags))
 
+
+class TaskPaperTask(GenericTask):
+
+    date_format = '@due(%Y-%m-%d)'
+
+    _prefix_char = '- '
+
+    @property
+    def prefix(self):
+        return '\t' * (self.nesting - 1) + self._prefix_char
+
+    @property
+    def tags(self):
+        return ' '.join('@'+ tag for tag in self._tags)
 
 class ToodledoTask(GenericTask):
     pass

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from ..tasks import GenericTask, OrgTask
+from ..tasks import GenericTask, OrgTask, TaskPaperTask
 
 
 class TestGenericTask(object):
@@ -49,3 +49,29 @@ class TestOrgTask(object):
         due = datetime(2013, 10, 6)
         task = OrgTask('Task with duedate', duedate=due)
         assert task.duedate == 'DEADLINE: <2013-10-06 Sun>'
+
+    def test_tags(self):
+        task = OrgTask('Task with tags', tags=['work', 'test'])
+        assert task.tags == ':work:test:'
+
+
+class TestTaskpaperTask(object):
+
+    def test_title(self):
+        title = 'I am an org task'
+        task = TaskPaperTask(title)
+        assert task.title == '- ' + title
+
+    def test_nesting(self):
+        title = 'I am a nested task'
+        task = TaskPaperTask(title, nesting=2)
+        assert task.title == '\t- ' + title
+
+    def test_duedate_format(self):
+        due = datetime(2013, 10, 6)
+        task = TaskPaperTask('Task with duedate', duedate=due)
+        assert task.duedate == '@due(2013-10-06)'
+
+    def test_tags(self):
+        task = TaskPaperTask('Task with tags', tags=['work', 'test'])
+        assert task.tags == '@work @test'
